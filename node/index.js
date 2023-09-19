@@ -1,57 +1,48 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require("express");
+const app = express();
+const port = 3000;
+
 const config = {
-    host: 'db',
-    user: 'root',
-    password: 'root',
-    database:'nodedb'
+    host: "db",
+    user: "root",
+    password: "root",
+    database: "nodedb"
 };
-const mysql = require('mysql')
-// const connection = mysql.createConnection(config)
 
-// const sql = `INSERT INTO people(name) values('Tonin')`
-// const query = `SELECT * FROM people`
-// connection.query(sql)
-// connection.end()
+const mysql = require("mysql");
+const connection = mysql.createConnection(config);
 
-app.get('/', (req,res) => {
-    res.send('<h1>Full Cycle Rocks!</h1>,')
-    addName('Tonin');
-    getNames(res);
-    res.json('query')
-})
+// Criando a tabela
+connection.query("CREATE TABLE IF NOT EXISTS `people` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=latin1");
+date = new Date();
 
-const addName = (name) => {
-    const connection = mysql.createConnection(config)
-    const sql = `INSERT INTO people(name) values('${nome}')`
-    connection.query(sql)
-    connection.end()
-}
+const sql = `INSERT INTO people(name) VALUES ("Tonin")`;
+connection.query(sql);
+connection.end();
 
-const getNames = (res) => {
-    const connection = mysql.createConnection(config)
-    const sql = `SELECT * FROM people`
-    connection.query(
-        sql,
-        (error, results, fields) => {
-            if (error) {
-                console.log(error);
-                mysql.end();
-                res.send(`<h1>${error}</h1>`);
+app.get("/", (req, res) => {
+    
+    var con = mysql.createConnection(config);
+    
+    con.connect(function(err) {
+        if (err) throw err;
+        con.query("SELECT id, name FROM people;", function (err, result, fields) {
+            var buffer = "";
+            if (err) throw err;
+            if (result.length > 0) {
+                buffer += "<table><tr><th>ID</th><th>Name</th></tr>"
+                for (i = 0; i < result.length; i++) {
+                    buffer += "<tr><th>"+result[i].id+"</th><th>"+result[i].name+"</th></tr>"
+                }
+                buffer += "</table>"
+            } else {
+                buffer = "Nenhum resultado encontrado"
             }
-            if (results.length > 0) {
-                console.log(results);
-                results.forEach(element => {
-                    page += `\n<h1>nome: ${element['name']}</h1>`
-                });
-                
-            }
-        }
-    )
-    connection.end()
-}
+            res.send("<h1>Full Cycle Rocks!</h1>" + buffer);
+        });
+    });
+});
 
-app.listen(port, ()=> {
-    console.log('Rodando na porta' + port)
-})
+app.listen(port, () => {
+    console.log("Rodando na porta " + port)
+});
